@@ -109,7 +109,7 @@ fun LoginScreen(navController: NavHostController, context: Context) {
                     navController.navigate("users")
                 } else {
                     // Mostrar mensaje de error
-                    Toast.makeText(context, "Usuario y/o Contraseña incorrectas", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(context, "Usuario y/o Contraseña incorrectos", Toast.LENGTH_SHORT).show()
                 }
             },
             modifier = Modifier
