@@ -32,9 +32,11 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.SpanStyle
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.withStyle
+import androidx.compose.ui.unit.sp
 import androidx.navigation.NavHostController
 
 @Composable
@@ -57,9 +59,10 @@ fun RecuperarContrasenaScreen(navController: NavHostController, context: Context
         OutlinedTextField(
             value = email,
             onValueChange = { email = it },
-            label = { Text(text = "Correo Electrónico") },
-//            visualTransformation = EmailVisualTransformation()
+            label = { Text(text = "Correo Electrónico", fontSize = 24.sp) },
+            textStyle = TextStyle(fontSize = 24.sp)
         )
+
 
         Spacer(modifier = Modifier.height(16.dp))
 
@@ -84,7 +87,7 @@ fun RecuperarContrasenaScreen(navController: NavHostController, context: Context
             ),
             shape = RoundedCornerShape(10.dp)
         ) {
-            Text(text = "Recordar")
+            Text(text = "Recordar", fontSize = 24.sp)
         }
 
         Spacer(modifier = Modifier.height(16.dp))
@@ -101,7 +104,9 @@ fun RecuperarContrasenaScreen(navController: NavHostController, context: Context
             text = annotatedText,
             onClick = { offset ->
                 navController.navigate("login")
-            }
+            },
+            style = TextStyle(fontSize = 20.sp)
+
         )
 
         Spacer(modifier = Modifier.weight(1f))

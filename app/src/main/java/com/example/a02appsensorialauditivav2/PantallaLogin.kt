@@ -52,6 +52,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.width
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.unit.dp
 
 @Composable
@@ -73,7 +74,8 @@ fun LoginScreen(navController: NavHostController, context: Context) {
         OutlinedTextField(
             value = email,
             onValueChange = { email = it },
-            label = { Text(text = "Correo Electrónico") }
+            label = { Text(text = "Correo Electrónico", fontSize = 24.sp) },
+            textStyle = TextStyle(fontSize = 24.sp)
         )
 
         Spacer(modifier = Modifier.height(16.dp))
@@ -81,7 +83,8 @@ fun LoginScreen(navController: NavHostController, context: Context) {
         OutlinedTextField(
             value = password,
             onValueChange = { password = it },
-            label = { Text(text = "Contraseña") },
+            label = { Text(text = "Contraseña", fontSize = 24.sp) },
+            textStyle = TextStyle(fontSize = 24.sp),
             visualTransformation = PasswordVisualTransformation()
         )
 
@@ -96,7 +99,9 @@ fun LoginScreen(navController: NavHostController, context: Context) {
             text = annotatedText2,
             onClick = { offset ->
                 navController.navigate("recover")
-            }
+            },
+            style = TextStyle(fontSize = 20.sp)
+
         )
         Spacer(modifier = Modifier.height(32.dp))
 
@@ -109,7 +114,11 @@ fun LoginScreen(navController: NavHostController, context: Context) {
                     navController.navigate("users")
                 } else {
                     // Mostrar mensaje de error
-                    Toast.makeText(context, "Usuario y/o Contraseña incorrectos", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(
+                        context,
+                        "Usuario y/o Contraseña incorrectos",
+                        Toast.LENGTH_SHORT
+                    ).show()
                 }
             },
             modifier = Modifier
@@ -118,12 +127,16 @@ fun LoginScreen(navController: NavHostController, context: Context) {
             colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF00BFFF)),
             shape = RoundedCornerShape(10.dp)
         ) {
-            Text(text = "Ingresar")
+            Text(text = "Ingresar", fontSize = 20.sp)
         }
 
         Spacer(modifier = Modifier.height(32.dp))
 
-        Text(text = "O inicia también con")
+        Text(
+            text = "O inicia también con",
+            fontSize = 20.sp,
+        )
+
 
         Row(
             modifier = Modifier
@@ -166,7 +179,8 @@ fun LoginScreen(navController: NavHostController, context: Context) {
             text = annotatedText,
             onClick = { offset ->
                 navController.navigate("register")
-            }
+            },
+            style = TextStyle(fontSize = 20.sp)
         )
 
         Spacer(modifier = Modifier.weight(1f))

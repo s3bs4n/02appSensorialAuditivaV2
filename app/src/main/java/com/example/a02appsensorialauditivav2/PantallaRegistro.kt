@@ -43,6 +43,7 @@ import android.widget.Toast
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.*
 import androidx.compose.runtime.*
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.unit.dp
 
 
@@ -79,27 +80,32 @@ fun RegistroScreen(navController: NavHostController, context: Context) {
             modifier = Modifier.size(300.dp)
         )
 
-        OutlinedTextField(value = email, onValueChange = {
-            email = it
-        }, label = {
-            Text(text = "Correo Electrónico")
-        })
+        OutlinedTextField(
+            value = email,
+            onValueChange = { email = it },
+            label = { Text(text = "Correo Electrónico", fontSize = 24.sp) },
+            textStyle = TextStyle(fontSize = 24.sp)
+        )
 
         Spacer(modifier = Modifier.height(16.dp))
 
-        OutlinedTextField(value = password, onValueChange = {
-            password = it
-        }, label = {
-            Text(text = "Contraseña")
-        }, visualTransformation = PasswordVisualTransformation())
+        OutlinedTextField(
+            value = password,
+            onValueChange = { password = it },
+            label = { Text(text = "Contraseña", fontSize = 24.sp) },
+            textStyle = TextStyle(fontSize = 24.sp),
+            visualTransformation = PasswordVisualTransformation()
+        )
 
         Spacer(modifier = Modifier.height(16.dp))
 
-        OutlinedTextField(value = confirmPassword, onValueChange = {
-            confirmPassword = it
-        }, label = {
-            Text(text = "Confirmar Contraseña")
-        }, visualTransformation = PasswordVisualTransformation())
+        OutlinedTextField(
+            value = confirmPassword,
+            onValueChange = { confirmPassword = it },
+            label = { Text(text = "Confirmar Contraseña", fontSize = 24.sp) },
+            textStyle = TextStyle(fontSize = 24.sp),
+            visualTransformation = PasswordVisualTransformation()
+        )
 
         Spacer(modifier = Modifier.height(16.dp))
 
@@ -113,7 +119,8 @@ fun RegistroScreen(navController: NavHostController, context: Context) {
 
                 } else {
                     Log.e("Registro", "Las contraseñas no coinciden")
-                    Toast.makeText(context, "Las contraseñas no coinciden", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(context, "Las contraseñas no coinciden", Toast.LENGTH_SHORT)
+                        .show()
                 }
             },
             modifier = Modifier
@@ -124,7 +131,7 @@ fun RegistroScreen(navController: NavHostController, context: Context) {
             ),
             shape = RoundedCornerShape(10.dp)
         ) {
-            Text(text = "Registrarse")
+            Text(text = "Registrarse", fontSize = 24.sp)
         }
 
         Spacer(modifier = Modifier.height(16.dp))
@@ -132,17 +139,17 @@ fun RegistroScreen(navController: NavHostController, context: Context) {
 //        FUNCION PARA IR A LOGIN
         val annotatedText = buildAnnotatedString {
             append("¿Ya tienes una cuenta? ")
-            withStyle(style = SpanStyle(fontWeight = FontWeight.Bold)) {
+            withStyle(style = SpanStyle(fontWeight = FontWeight.Bold, fontSize = 24.sp)) {
                 append("Inicia Sesión")
             }
         }
 
         ClickableText(
             text = annotatedText,
-            onClick = { offset ->
-                navController.navigate("login")
-            }
+            onClick = { offset -> navController.navigate("login") },
+            style = TextStyle(fontSize = 24.sp)
         )
+
 
         Spacer(modifier = Modifier.weight(1f))
 
