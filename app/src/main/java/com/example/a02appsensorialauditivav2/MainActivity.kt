@@ -35,7 +35,7 @@ class MainActivity : ComponentActivity() {
                 composable("login") { PantallaLogin(navController) }
                 composable("register") { PantallaRegistro() }
                 composable("recover") { RecuperarContrasenaScreen(navController, context) }
-                composable("users") { PantallaUsuarios(context) }
+                composable("users") { PantallaUsuarios(navController) }
             }
         }
     }
