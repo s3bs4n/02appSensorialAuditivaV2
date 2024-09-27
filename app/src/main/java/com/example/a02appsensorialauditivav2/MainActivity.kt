@@ -33,7 +33,7 @@ class MainActivity : ComponentActivity() {
 
             NavHost(navController = navController, startDestination = "login") {
                 composable("login") { PantallaLogin(navController) }
-                composable("register") { PantallaRegistro() }
+                composable("register") { PantallaRegistro(navController) }
                 composable("recover") { RecuperarContrasenaScreen(navController, context) }
                 composable("users") { PantallaUsuarios(navController) }
             }

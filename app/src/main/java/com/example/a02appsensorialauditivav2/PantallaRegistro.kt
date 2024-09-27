@@ -17,10 +17,11 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.graphics.Color
+import androidx.navigation.NavHostController
 import com.example.a02appsensorialauditivav2.AuthViewModel
 
 @Composable
-fun PantallaRegistro(authViewModel: AuthViewModel = viewModel()) {
+fun PantallaRegistro(navController: NavHostController, authViewModel: AuthViewModel = viewModel()) {
     var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
     var confirmPassword by remember { mutableStateOf("") }
@@ -100,6 +101,10 @@ fun PantallaRegistro(authViewModel: AuthViewModel = viewModel()) {
 
         Spacer(modifier = Modifier.height(16.dp))
 
+        TextButton(onClick = { navController.navigate("login") }) {
+            Text(text = "¿Tienes cuenta? Inicia Sesión", fontSize = 18.sp, color = Color.DarkGray)
+        }
+
         // Mensaje de estado del registro
         authState?.let { state ->
             if (state.isSuccess) {
@@ -108,5 +113,9 @@ fun PantallaRegistro(authViewModel: AuthViewModel = viewModel()) {
                 Toast.makeText(context, "Error: ${state.errorMessage}", Toast.LENGTH_LONG).show()
             }
         }
+
+        Spacer(modifier = Modifier.weight(1f))
+
+
     }
 }
