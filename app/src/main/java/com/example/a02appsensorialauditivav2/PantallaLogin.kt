@@ -1,188 +1,92 @@
 package com.example.a02appsensorialauditivav2
 
-import android.content.Context
-import android.util.Log
 import android.widget.Toast
-import androidx.compose.foundation.Image
-import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.paddingFromBaseline
-import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
-import androidx.compose.material3.Button
-import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
-import androidx.compose.material3.TextField
-import androidx.compose.runtime.Composable
+import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.modifier.ModifierLocal
-import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-
-import androidx.compose.foundation.text.ClickableText
-import androidx.compose.ui.text.AnnotatedString
-import androidx.compose.ui.text.SpanStyle
-import androidx.compose.ui.text.buildAnnotatedString
-import androidx.compose.ui.text.style.TextDecoration
-import androidx.compose.ui.text.withStyle
-import androidx.compose.ui.unit.sp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
-
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.unit.dp
-import androidx.compose.material3.ButtonDefaults
-
-import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.ui.unit.dp
-import androidx.compose.foundation.Image
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.width
-import androidx.compose.ui.draw.clip
-import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.text.TextStyle
-import androidx.compose.ui.unit.dp
+import com.google.firebase.auth.FirebaseAuth
 
 @Composable
-fun LoginScreen(navController: NavHostController, context: Context) {
+fun PantallaLogin(navController: NavHostController, authViewModel: AuthViewModel = viewModel()) {
+
     var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
-    val sharedPreferences = context.getSharedPreferences("usuarios", Context.MODE_PRIVATE)
+    val context = LocalContext.current
+    val authState by authViewModel.authState.observeAsState()
 
     Column(
-        modifier = Modifier.fillMaxSize(),
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(24.dp),
         verticalArrangement = Arrangement.Center,
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        Image(
-            painter = painterResource(id = R.drawable.logo), contentDescription = "Login image",
-            modifier = Modifier.size(300.dp)
-        )
-
+        // Campo de correo electrónico
         OutlinedTextField(
             value = email,
             onValueChange = { email = it },
-            label = { Text(text = "Correo Electrónico", fontSize = 24.sp) },
-            textStyle = TextStyle(fontSize = 24.sp)
+            label = { Text(text = "Correo Electrónico") },
+            textStyle = TextStyle(fontSize = 20.sp),
+            modifier = Modifier.fillMaxWidth()
         )
 
         Spacer(modifier = Modifier.height(16.dp))
 
+        // Campo de contraseña
         OutlinedTextField(
             value = password,
             onValueChange = { password = it },
-            label = { Text(text = "Contraseña", fontSize = 24.sp) },
-            textStyle = TextStyle(fontSize = 24.sp),
-            visualTransformation = PasswordVisualTransformation()
+            label = { Text(text = "Contraseña") },
+            textStyle = TextStyle(fontSize = 20.sp),
+            visualTransformation = PasswordVisualTransformation(),
+            modifier = Modifier.fillMaxWidth()
         )
 
         Spacer(modifier = Modifier.height(32.dp))
 
-// FUNCION PARA IR A olvidé contraseña
-        val annotatedText2 = buildAnnotatedString {
-            append("¿Olvidaste tu contraseña?")
-        }
-
-        ClickableText(
-            text = annotatedText2,
-            onClick = { offset ->
-                navController.navigate("recover")
-            },
-            style = TextStyle(fontSize = 20.sp)
-
-        )
-        Spacer(modifier = Modifier.height(32.dp))
-
+        // Botón de iniciar sesión
         Button(
             onClick = {
-                // Verificar credenciales
-                val savedPassword = sharedPreferences.getString(email, null)
-                if (savedPassword == password) {
-                    // Redirigir a la pantalla de usuarios
-                    navController.navigate("users")
-                } else {
-                    // Mostrar mensaje de error
-                    Toast.makeText(
-                        context,
-                        "Usuario y/o Contraseña incorrectos",
-                        Toast.LENGTH_SHORT
-                    ).show()
-                }
+                authViewModel.login(email, password) // Intentar iniciar sesión en Firebase
             },
             modifier = Modifier
-                .width(310.dp)
-                .padding(horizontal = 16.dp),
-            colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF00BFFF)),
-            shape = RoundedCornerShape(10.dp)
-        ) {
-            Text(text = "Ingresar", fontSize = 20.sp)
-        }
-
-        Spacer(modifier = Modifier.height(32.dp))
-
-        Text(
-            text = "O inicia también con",
-            fontSize = 20.sp,
-        )
-
-
-        Row(
-            modifier = Modifier
                 .fillMaxWidth()
-                .padding(40.dp),
-            horizontalArrangement = Arrangement.SpaceEvenly
+                .height(60.dp),
+            colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF00BFFF)),
+            shape = RoundedCornerShape(12.dp)
         ) {
-            Image(painter = painterResource(id = R.drawable.fb),
-                contentDescription = "Facebook",
-                modifier = Modifier
-                    .size(60.dp)
-                    .clickable { /* Facebook clicked */ }
-            )
-
-            Image(painter = painterResource(id = R.drawable.google),
-                contentDescription = "Google",
-                modifier = Modifier
-                    .size(60.dp)
-                    .clickable { /* Google clicked */ }
-            )
-
-            Image(painter = painterResource(id = R.drawable.twitter),
-                contentDescription = "Twitter",
-                modifier = Modifier
-                    .size(60.dp)
-                    .clickable { /* Twitter clicked */ }
-            )
+            Text(text = "Iniciar Sesión", fontSize = 22.sp)
         }
 
-        Spacer(modifier = Modifier.height(16.dp))
+        Spacer(modifier = Modifier.height(24.dp))
 
-        val annotatedText = buildAnnotatedString {
-            append("¿Aún no tienes una cuenta? ")
-            withStyle(style = SpanStyle(fontWeight = FontWeight.Bold)) {
-                append("Regístrate")
+        // Mensajes de éxito o error al iniciar sesión
+        authState?.let { state ->
+            if (state.isSuccess) {
+                Toast.makeText(context, "Inicio de sesión exitoso", Toast.LENGTH_LONG).show()
+                // Navegar a otra pantalla (ejemplo: PantallaUsuarios) después del login
+                navController.navigate("users") // Asegúrate de que la ruta esté definida en tu NavHost
+            } else if (state.isError) {
+                Toast.makeText(context, "Error: ${state.errorMessage}", Toast.LENGTH_LONG).show()
             }
         }
 
-        ClickableText(
-            text = annotatedText,
-            onClick = { offset ->
-                navController.navigate("register")
-            },
-            style = TextStyle(fontSize = 20.sp)
-        )
-
-        Spacer(modifier = Modifier.weight(1f))
+        // Enlace a la pantalla de registro si no tienes una cuenta
+        Spacer(modifier = Modifier.height(16.dp))
+        TextButton(onClick = { navController.navigate("register") }) {
+            Text(text = "¿No tienes cuenta? Regístrate", fontSize = 18.sp, color = Color.Blue)
+        }
     }
 }

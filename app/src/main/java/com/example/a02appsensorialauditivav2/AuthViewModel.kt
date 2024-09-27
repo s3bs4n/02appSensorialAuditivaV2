@@ -21,6 +21,17 @@ class AuthViewModel : ViewModel() {
                 }
             }
     }
+    fun login(email: String, password: String) {
+        auth.signInWithEmailAndPassword(email, password)
+            .addOnCompleteListener { task ->
+                if (task.isSuccessful) {
+                    _authState.value = AuthState(isSuccess = true)
+                } else {
+                    _authState.value = AuthState(isError = true, errorMessage = task.exception?.message)
+                }
+            }
+    }
+
 }
 
 data class AuthState(
