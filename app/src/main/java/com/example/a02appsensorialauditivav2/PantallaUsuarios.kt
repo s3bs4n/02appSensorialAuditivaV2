@@ -37,7 +37,7 @@ fun PantallaUsuarios(navController: NavHostController) {
                 val users = result.map { document ->
                     User(
                         id = document.id,
-                        name = document.getString("name") ?: "No Name"
+                        name = document.getString("email") ?: "Sin Email"  // Cambiado a "email"
                     )
                 }
                 userList = users
@@ -46,6 +46,7 @@ fun PantallaUsuarios(navController: NavHostController) {
                 Toast.makeText(context, "Error obteniendo usuarios", Toast.LENGTH_SHORT).show()
             }
     }
+
 
     // Reestructuramos el diseño para que el botón siempre esté visible
     Column(

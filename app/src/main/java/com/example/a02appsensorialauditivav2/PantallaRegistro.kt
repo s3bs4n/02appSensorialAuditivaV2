@@ -1,121 +1,110 @@
-package com.example.a02appsensorialauditivav2
-
 import android.widget.Toast
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.*
+import androidx.compose.material.*
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedTextField
 import androidx.compose.runtime.*
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.text.input.PasswordVisualTransformation
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
-import androidx.lifecycle.viewmodel.compose.viewModel
-import androidx.compose.runtime.livedata.observeAsState
-import androidx.compose.ui.graphics.Color
 import androidx.navigation.NavHostController
-import com.example.a02appsensorialauditivav2.AuthViewModel
+import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.firestore.FirebaseFirestore
+import androidx.compose.material3.*
+import androidx.compose.ui.text.input.PasswordVisualTransformation
 
 @Composable
-fun PantallaRegistro(navController: NavHostController, authViewModel: AuthViewModel = viewModel()) {
+fun PantallaRegistro(navController: NavHostController) {
+    val context = LocalContext.current
+    val auth = FirebaseAuth.getInstance()
+    val db = FirebaseFirestore.getInstance()
+
     var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
     var confirmPassword by remember { mutableStateOf("") }
-    val authState by authViewModel.authState.observeAsState()
-    val context = LocalContext.current
 
     Column(
         modifier = Modifier
             .fillMaxSize()
             .padding(16.dp),
-        horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center
     ) {
-        // Imagen del logo
-        Image(
-            painter = painterResource(id = R.drawable.logo), // Reemplaza con tu recurso de imagen
-            contentDescription = "Registro image",
-            modifier = Modifier.size(300.dp)
-        )
+        Text(text = "Registrar Usuario", style = MaterialTheme.typography.headlineSmall)
 
         Spacer(modifier = Modifier.height(16.dp))
 
-        // Campo de correo electrónico
+        // Input de correo electrónico
         OutlinedTextField(
             value = email,
             onValueChange = { email = it },
-            label = { Text("Correo Electrónico", fontSize = 24.sp) },
-            textStyle = LocalTextStyle.current.copy(fontSize = 24.sp),
+            label = { Text("Correo Electrónico") },
             modifier = Modifier.fillMaxWidth()
         )
 
         Spacer(modifier = Modifier.height(16.dp))
 
-        // Campo de contraseña
+        // Input de contraseña
         OutlinedTextField(
             value = password,
             onValueChange = { password = it },
-            label = { Text("Contraseña", fontSize = 24.sp) },
-            textStyle = LocalTextStyle.current.copy(fontSize = 24.sp),
-            visualTransformation = PasswordVisualTransformation(),
-            modifier = Modifier.fillMaxWidth()
+            label = { Text("Contraseña") },
+            modifier = Modifier.fillMaxWidth(),
+            visualTransformation = PasswordVisualTransformation()
         )
 
         Spacer(modifier = Modifier.height(16.dp))
 
-        // Campo de confirmación de contraseña
+        // Confirmar contraseña
         OutlinedTextField(
             value = confirmPassword,
             onValueChange = { confirmPassword = it },
-            label = { Text("Confirmar Contraseña", fontSize = 24.sp) },
-            textStyle = LocalTextStyle.current.copy(fontSize = 24.sp),
-            visualTransformation = PasswordVisualTransformation(),
-            modifier = Modifier.fillMaxWidth()
+            label = { Text("Confirmar Contraseña") },
+            modifier = Modifier.fillMaxWidth(),
+            visualTransformation = PasswordVisualTransformation()
         )
 
-        Spacer(modifier = Modifier.height(16.dp))
+        Spacer(modifier = Modifier.height(24.dp))
 
-        // Botón de registro
+        // Botón para registrar el usuario
         Button(
             onClick = {
                 if (password == confirmPassword) {
-                    authViewModel.register(email, password)
+                    // Crear usuario con Firebase Authentication
+                    auth.createUserWithEmailAndPassword(email, password)
+                        .addOnCompleteListener { task ->
+                            if (task.isSuccessful) {
+                                // Obtener el usuario recién registrado
+                                val user = auth.currentUser
+
+                                // Guardar los datos del usuario en Firestore
+                                val userData = hashMapOf(
+                                    "uid" to user?.uid,
+                                    "email" to user?.email,
+                                    "provider" to "Email/Password",
+                                    "creationDate" to System.currentTimeMillis().toString()
+                                )
+
+                                db.collection("usuarios").document(user?.uid!!)
+                                    .set(userData)
+                                    .addOnSuccessListener {
+                                        Toast.makeText(context, "Usuario registrado y guardado", Toast.LENGTH_SHORT).show()
+                                        navController.navigate("login") // Navegar al login
+                                    }
+                                    .addOnFailureListener {
+                                        Toast.makeText(context, "Error al guardar en Firestore", Toast.LENGTH_SHORT).show()
+                                    }
+                            } else {
+                                Toast.makeText(context, "Error al registrar en Firebase Auth", Toast.LENGTH_SHORT).show()
+                            }
+                        }
                 } else {
-                    Toast.makeText(context, "Las contraseñas no coinciden", Toast.LENGTH_LONG).show()
+                    Toast.makeText(context, "Las contraseñas no coinciden", Toast.LENGTH_SHORT).show()
                 }
             },
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = 16.dp),
-            colors = ButtonDefaults.buttonColors(
-                containerColor = Color(0xFF00BFFF)
-            ),
-            shape = RoundedCornerShape(10.dp)
+            modifier = Modifier.fillMaxWidth(),
+            colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary)
         ) {
-            Text(text = "Registrarse", fontSize = 24.sp)
+            Text(text = "Registrar")
         }
-
-        Spacer(modifier = Modifier.height(16.dp))
-
-        TextButton(onClick = { navController.navigate("login") }) {
-            Text(text = "¿Tienes cuenta? Inicia Sesión", fontSize = 18.sp, color = Color.DarkGray)
-        }
-
-        // Mensaje de estado del registro
-        authState?.let { state ->
-            if (state.isSuccess) {
-                Toast.makeText(context, "Usuario registrado exitosamente", Toast.LENGTH_LONG).show()
-            } else if (state.isError) {
-                Toast.makeText(context, "Error: ${state.errorMessage}", Toast.LENGTH_LONG).show()
-            }
-        }
-
-        Spacer(modifier = Modifier.weight(1f))
-
-
     }
 }
