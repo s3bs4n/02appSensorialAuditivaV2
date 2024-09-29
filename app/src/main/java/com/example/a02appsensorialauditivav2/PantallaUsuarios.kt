@@ -27,7 +27,7 @@ fun PantallaUsuarios(navController: NavHostController) {
     val db = FirebaseFirestore.getInstance()
 
     // Variable para almacenar la lista de usuarios
-    var userList by remember { mutableStateOf(listOf<User>()) }
+    var userList by remember { mutableStateOf(listOf<Usuarios>()) }
 
     // Función para obtener los usuarios de Firestore
     LaunchedEffect(Unit) {
@@ -35,9 +35,13 @@ fun PantallaUsuarios(navController: NavHostController) {
             .get()
             .addOnSuccessListener { result ->
                 val users = result.map { document ->
-                    User(
-                        id = document.id,
-                        name = document.getString("email") ?: "Sin Email"  // Cambiado a "email"
+                    Usuarios(
+                        email = document.getString("email") ?: "",
+                        nombre = document.getString("nombre") ?: "",
+                        apellidoPaterno = document.getString("apellidoPaterno") ?: "",
+                        apellidoMaterno = document.getString("apellidoMaterno") ?: "",
+                        telefono = document.getString("telefono") ?: "",
+                        direccion = document.getString("direccion") ?: ""
                     )
                 }
                 userList = users
@@ -47,13 +51,20 @@ fun PantallaUsuarios(navController: NavHostController) {
             }
     }
 
+    // Función para eliminar usuario
+    fun eliminarUsuario(email: String) {
+        db.collection("usuarios").document(email)
+            .delete()
+            .addOnSuccessListener {
+                Toast.makeText(context, "Usuario eliminado", Toast.LENGTH_SHORT).show()
+                userList = userList.filter { it.email != email }  // Remover de la lista
+            }
+            .addOnFailureListener {
+                Toast.makeText(context, "Error al eliminar usuario", Toast.LENGTH_SHORT).show()
+            }
+    }
 
-    // Reestructuramos el diseño para que el botón siempre esté visible
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(24.dp)
-    ) {
+    Column(modifier = Modifier.fillMaxSize().padding(24.dp)) {
         Text(text = "Bienvenido a la Pantalla de Usuarios", fontSize = 24.sp)
 
         Spacer(modifier = Modifier.height(16.dp))
@@ -61,28 +72,25 @@ fun PantallaUsuarios(navController: NavHostController) {
         // Tabla de usuarios
         LazyColumn(
             modifier = Modifier
-                .weight(1f) // La lista ocupará el espacio restante para que el botón esté visible
+                .weight(1f)
                 .fillMaxWidth()
         ) {
             items(userList) { user ->
-                UserRow(user)
+                UserRow(user, ::eliminarUsuario)
             }
         }
 
         Spacer(modifier = Modifier.height(16.dp))
 
-        // Botón para salir (cerrar sesión)
         Button(
             onClick = {
-                FirebaseAuth.getInstance().signOut() // Cerrar sesión en Firebase
+                FirebaseAuth.getInstance().signOut()
                 Toast.makeText(context, "Sesión cerrada", Toast.LENGTH_SHORT).show()
                 navController.navigate("login") {
-                    popUpTo("users") { inclusive = true } // Eliminar la pantalla de usuarios del backstack
+                    popUpTo("users") { inclusive = true }
                 }
             },
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(60.dp),
+            modifier = Modifier.fillMaxWidth().height(60.dp),
             colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF00BFFF)),
             shape = RoundedCornerShape(12.dp)
         ) {
@@ -91,36 +99,21 @@ fun PantallaUsuarios(navController: NavHostController) {
     }
 }
 
-// Composable para mostrar cada usuario en una fila
 @Composable
-fun UserRow(user: User) {
+fun UserRow(user: Usuarios, eliminarUsuario: (String) -> Unit) {
+    val context = LocalContext.current
+
     Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(vertical = 8.dp)
+        modifier = Modifier.fillMaxWidth().padding(vertical = 8.dp)
     ) {
         Text(
-            text = "Usuario: ${user.name}",
+            text = "Usuario: ${user.email} - ${user.nombre} ${user.apellidoPaterno}",
             fontSize = 18.sp,
             modifier = Modifier.weight(1f)
         )
 
-        // Botón para modificar el usuario (ejemplo)
         Button(
-            onClick = {
-                // Aquí podrías implementar la funcionalidad para editar al usuario
-            },
-            modifier = Modifier.padding(horizontal = 4.dp),
-            colors = ButtonDefaults.buttonColors(containerColor = Color.Gray)
-        ) {
-            Text("Modificar")
-        }
-
-        // Botón para eliminar el usuario
-        Button(
-            onClick = {
-                // Aquí va la lógica para eliminar al usuario
-            },
+            onClick = { eliminarUsuario(user.email) },
             modifier = Modifier.padding(horizontal = 4.dp),
             colors = ButtonDefaults.buttonColors(containerColor = Color.Red)
         ) {
@@ -128,6 +121,3 @@ fun UserRow(user: User) {
         }
     }
 }
-
-// Clase de datos para representar un usuario
-data class User(val id: String, val name: String)
