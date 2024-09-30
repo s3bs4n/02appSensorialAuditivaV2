@@ -16,6 +16,11 @@ import androidx.compose.ui.unit.sp
 import androidx.navigation.NavHostController
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
+import androidx.compose.foundation.layout.*
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 
 @Composable
 fun PantallaUsuarios(navController: NavHostController) {
@@ -50,16 +55,39 @@ fun PantallaUsuarios(navController: NavHostController) {
 
     // Función para eliminar usuario
     fun eliminarUsuario(email: String) {
-        db.collection("usuarios").document(email)
-            .delete()
-            .addOnSuccessListener {
-                Toast.makeText(context, "Usuario eliminado", Toast.LENGTH_SHORT).show()
-                userList = userList.filter { it.email != email }  // Remover de la lista
+        db.collection("usuarios").whereEqualTo("email", email)
+            .get()
+            .addOnSuccessListener { querySnapshot ->
+                if (!querySnapshot.isEmpty) {
+                    val document =
+                        querySnapshot.documents[0]  // Obtener el primer documento encontrado
+                    val documentId = document.id  // ID del documento en Firestore
+
+                    // Eliminar el documento usando su ID
+                    db.collection("usuarios").document(documentId)
+                        .delete()
+                        .addOnSuccessListener {
+                            Toast.makeText(context, "Usuario eliminado", Toast.LENGTH_SHORT).show()
+                            userList =
+                                userList.filter { it.email != email }  // Remover de la lista local
+                        }
+                        .addOnFailureListener {
+                            Toast.makeText(context, "Error al eliminar usuario", Toast.LENGTH_SHORT)
+                                .show()
+                        }
+                } else {
+                    Toast.makeText(
+                        context,
+                        "No se encontró un usuario con este correo",
+                        Toast.LENGTH_SHORT
+                    ).show()
+                }
             }
             .addOnFailureListener {
-                Toast.makeText(context, "Error al eliminar usuario", Toast.LENGTH_SHORT).show()
+                Toast.makeText(context, "Error al buscar el usuario", Toast.LENGTH_SHORT).show()
             }
     }
+
 
     // Función para modificar el correo del usuario
     fun modificarCorreoUsuario(id: String, nuevoCorreo: String) {
@@ -68,14 +96,19 @@ fun PantallaUsuarios(navController: NavHostController) {
             .get()
             .addOnSuccessListener { querySnapshot ->
                 if (!querySnapshot.isEmpty) {
-                    val document = querySnapshot.documents[0]  // Obtener el primer documento encontrado
+                    val document =
+                        querySnapshot.documents[0]  // Obtener el primer documento encontrado
                     val documentId = document.id  // ID del documento real en Firestore
 
                     // Actualizar el campo "email" en el documento encontrado
                     db.collection("usuarios").document(documentId)
                         .update("email", nuevoCorreo)
                         .addOnSuccessListener {
-                            Toast.makeText(context, "Correo actualizado en Firestore", Toast.LENGTH_SHORT).show()
+                            Toast.makeText(
+                                context,
+                                "Correo actualizado en Firestore",
+                                Toast.LENGTH_SHORT
+                            ).show()
 
                             // Actualizar en Firebase Authentication
                             val user = FirebaseAuth.getInstance().currentUser
@@ -83,26 +116,51 @@ fun PantallaUsuarios(navController: NavHostController) {
                                 it.verifyBeforeUpdateEmail(nuevoCorreo)
                                     .addOnCompleteListener { task ->
                                         if (task.isSuccessful) {
-                                            Toast.makeText(context, "Correo de verificación enviado. Revisa tu bandeja de entrada.", Toast.LENGTH_SHORT).show()
+                                            Toast.makeText(
+                                                context,
+                                                "Correo de verificación enviado. Revisa tu bandeja de entrada.",
+                                                Toast.LENGTH_SHORT
+                                            ).show()
                                             // Actualizar la lista local de usuarios
-                                            userList = userList.map { if (it.email == id) it.copy(email = nuevoCorreo) else it }
+                                            userList =
+                                                userList.map { if (it.email == id) it.copy(email = nuevoCorreo) else it }
                                         } else {
-                                            Toast.makeText(context, "Error al enviar verificación: ${task.exception?.message}", Toast.LENGTH_LONG).show()
+                                            Toast.makeText(
+                                                context,
+                                                "Error al enviar verificación: ${task.exception?.message}",
+                                                Toast.LENGTH_LONG
+                                            ).show()
                                         }
                                     }
                             } ?: run {
-                                Toast.makeText(context, "Usuario no encontrado o no autenticado", Toast.LENGTH_SHORT).show()
+                                Toast.makeText(
+                                    context,
+                                    "Usuario no encontrado o no autenticado",
+                                    Toast.LENGTH_SHORT
+                                ).show()
                             }
                         }
                         .addOnFailureListener {
-                            Toast.makeText(context, "Error al actualizar correo en Firestore", Toast.LENGTH_SHORT).show()
+                            Toast.makeText(
+                                context,
+                                "Error al actualizar correo en Firestore",
+                                Toast.LENGTH_SHORT
+                            ).show()
                         }
                 } else {
-                    Toast.makeText(context, "No se encontró un usuario con este correo", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(
+                        context,
+                        "No se encontró un usuario con este correo",
+                        Toast.LENGTH_SHORT
+                    ).show()
                 }
             }
             .addOnFailureListener { e ->
-                Toast.makeText(context, "Error al buscar documento: ${e.message}", Toast.LENGTH_LONG).show()
+                Toast.makeText(
+                    context,
+                    "Error al buscar documento: ${e.message}",
+                    Toast.LENGTH_LONG
+                ).show()
             }
     }
 
@@ -114,7 +172,11 @@ fun PantallaUsuarios(navController: NavHostController) {
 
 
 
-    Column(modifier = Modifier.fillMaxSize().padding(24.dp)) {
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(24.dp)
+    ) {
         Text(text = "Bienvenido a la Pantalla de Usuarios", fontSize = 24.sp)
 
         Spacer(modifier = Modifier.height(16.dp))
@@ -134,14 +196,30 @@ fun PantallaUsuarios(navController: NavHostController) {
 
         Button(
             onClick = {
+                // Navega a la pantalla de TextoVoz
+                navController.navigate("TextoVoz")
+            },
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(60.dp),
+            colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF00BFFF)),
+            shape = RoundedCornerShape(12.dp)
+        ) {
+            Text(text = "Texto a Voz", fontSize = 22.sp)
+        }
+
+        Button(
+            onClick = {
                 FirebaseAuth.getInstance().signOut()
                 Toast.makeText(context, "Sesión cerrada", Toast.LENGTH_SHORT).show()
                 navController.navigate("login") {
                     popUpTo("users") { inclusive = true }
                 }
             },
-            modifier = Modifier.fillMaxWidth().height(60.dp),
-            colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF00BFFF)),
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(60.dp),
+            colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFB22222)),
             shape = RoundedCornerShape(12.dp)
         ) {
             Text(text = "Salir", fontSize = 22.sp)
@@ -149,67 +227,89 @@ fun PantallaUsuarios(navController: NavHostController) {
     }
 }
 
-// Aquí agregamos el dialog para modificar el correo
+
 @Composable
-fun UserRow(user: Usuarios, eliminarUsuario: (String) -> Unit, modificarCorreoUsuario: (String, String) -> Unit) {
+fun UserRow(
+    user: Usuarios,
+    eliminarUsuario: (String) -> Unit,
+    modificarCorreoUsuario: (String, String) -> Unit
+) {
     val context = LocalContext.current
     var showDialog by remember { mutableStateOf(false) }
     var nuevoCorreo by remember { mutableStateOf("") }
 
-    Row(
-        modifier = Modifier.fillMaxWidth().padding(vertical = 8.dp)
+    // Envolvemos el contenido en una Card
+    Card(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(8.dp),  // Padding externo
+        shape = RoundedCornerShape(16.dp),  // Bordes redondeados
+        elevation = CardDefaults.cardElevation(4.dp)  // Sombra para la Card
     ) {
-        Text(
-            text = "Usuario: ${user.email} - ${user.nombre} ${user.apellidoPaterno}",
-            fontSize = 18.sp,
-            modifier = Modifier.weight(1f)
-        )
-
-        // Botón para modificar el correo
-        Button(
-            onClick = { showDialog = true },  // Muestra el diálogo
-            modifier = Modifier.padding(horizontal = 4.dp),
-            colors = ButtonDefaults.buttonColors(containerColor = Color.Gray)
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(16.dp)  // Padding interno
         ) {
-            Text("Modificar")
-        }
-
-        // Botón para eliminar el usuario
-        Button(
-            onClick = { eliminarUsuario(user.email) },
-            modifier = Modifier.padding(horizontal = 4.dp),
-            colors = ButtonDefaults.buttonColors(containerColor = Color.Red)
-        ) {
-            Text("Eliminar")
-        }
-
-        // Dialog para ingresar el nuevo correo
-        if (showDialog) {
-            AlertDialog(
-                onDismissRequest = { showDialog = false },
-                title = { Text(text = "Modificar Correo") },
-                text = {
-                    Column {
-                        Text("Nuevo correo:")
-                        TextField(value = nuevoCorreo, onValueChange = { nuevoCorreo = it })
-                    }
-                },
-                confirmButton = {
-                    Button(
-                        onClick = {
-                            modificarCorreoUsuario(user.email, nuevoCorreo)
-                            showDialog = false
-                        }
-                    ) {
-                        Text("Confirmar")
-                    }
-                },
-                dismissButton = {
-                    Button(onClick = { showDialog = false }) {
-                        Text("Cancelar")
-                    }
-                }
+            // Texto del usuario
+            Text(
+                text = "Usuario: ${user.email} - ${user.nombre} ${user.apellidoPaterno}",
+                fontSize = 18.sp,
+                modifier = Modifier.padding(bottom = 8.dp)  // Espacio debajo del texto
             )
+
+            Row(
+                horizontalArrangement = Arrangement.End,
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                // Botón para modificar el correo
+                Button(
+                    onClick = { showDialog = true },  // Muestra el diálogo
+                    modifier = Modifier.padding(end = 8.dp),  // Espacio entre botones
+                    colors = ButtonDefaults.buttonColors(containerColor = Color.Gray),
+                    shape = RoundedCornerShape(50)  // Bordes redondeados para el botón
+                ) {
+                    Text("Modificar")
+                }
+
+                // Botón para eliminar el usuario
+                Button(
+                    onClick = { eliminarUsuario(user.email) },
+                    colors = ButtonDefaults.buttonColors(containerColor = Color.Red),
+                    shape = RoundedCornerShape(50)  // Bordes redondeados para el botón
+                ) {
+                    Text("Eliminar")
+                }
+            }
         }
+    }
+
+    // Dialog para ingresar el nuevo correo
+    if (showDialog) {
+        AlertDialog(
+            onDismissRequest = { showDialog = false },
+            title = { Text(text = "Modificar Correo") },
+            text = {
+                Column {
+                    Text("Nuevo correo:")
+                    TextField(value = nuevoCorreo, onValueChange = { nuevoCorreo = it })
+                }
+            },
+            confirmButton = {
+                Button(
+                    onClick = {
+                        modificarCorreoUsuario(user.email, nuevoCorreo)
+                        showDialog = false
+                    }
+                ) {
+                    Text("Confirmar")
+                }
+            },
+            dismissButton = {
+                Button(onClick = { showDialog = false }) {
+                    Text("Cancelar")
+                }
+            }
+        )
     }
 }

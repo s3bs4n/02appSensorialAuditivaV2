@@ -1,5 +1,7 @@
 import android.widget.Toast
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.*
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
@@ -11,7 +13,13 @@ import androidx.navigation.NavHostController
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 import androidx.compose.material3.*
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.input.PasswordVisualTransformation
+import androidx.compose.ui.unit.sp
+import com.example.a02appsensorialauditivav2.R
 
 @Composable
 fun PantallaRegistro(navController: NavHostController) {
@@ -26,10 +34,16 @@ fun PantallaRegistro(navController: NavHostController) {
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .padding(16.dp),
-        verticalArrangement = Arrangement.Center
+            .padding(24.dp),
+        verticalArrangement = Arrangement.Center,
+        horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        Text(text = "Registrar Usuario", style = MaterialTheme.typography.headlineSmall)
+        Image(
+            painter = painterResource(id = R.drawable.logo), contentDescription = "Registro image",
+            modifier = Modifier.size(300.dp)
+        )
+
+//        Text(text = "Registrar Usuario", style = MaterialTheme.typography.headlineSmall)
 
         Spacer(modifier = Modifier.height(16.dp))
 
@@ -37,8 +51,8 @@ fun PantallaRegistro(navController: NavHostController) {
         OutlinedTextField(
             value = email,
             onValueChange = { email = it },
-            label = { Text("Correo Electrónico") },
-            modifier = Modifier.fillMaxWidth()
+            label = { Text(text = "Correo Electrónico", fontSize = 24.sp) },
+            textStyle = TextStyle(fontSize = 24.sp)
         )
 
         Spacer(modifier = Modifier.height(16.dp))
@@ -47,8 +61,8 @@ fun PantallaRegistro(navController: NavHostController) {
         OutlinedTextField(
             value = password,
             onValueChange = { password = it },
-            label = { Text("Contraseña") },
-            modifier = Modifier.fillMaxWidth(),
+            label = { Text(text = "Contraseña", fontSize = 24.sp) },
+            textStyle = TextStyle(fontSize = 24.sp),
             visualTransformation = PasswordVisualTransformation()
         )
 
@@ -58,8 +72,8 @@ fun PantallaRegistro(navController: NavHostController) {
         OutlinedTextField(
             value = confirmPassword,
             onValueChange = { confirmPassword = it },
-            label = { Text("Confirmar Contraseña") },
-            modifier = Modifier.fillMaxWidth(),
+            label = { Text(text = "Confirmar Contraseña", fontSize = 24.sp) },
+            textStyle = TextStyle(fontSize = 24.sp),
             visualTransformation = PasswordVisualTransformation()
         )
 
@@ -101,10 +115,22 @@ fun PantallaRegistro(navController: NavHostController) {
                     Toast.makeText(context, "Las contraseñas no coinciden", Toast.LENGTH_SHORT).show()
                 }
             },
-            modifier = Modifier.fillMaxWidth(),
-            colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary)
+            modifier = Modifier
+                .width(310.dp)
+                .height(60.dp)
+                .padding(horizontal = 16.dp),
+            colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF00BFFF)),
+            shape = RoundedCornerShape(12.dp)
+
         ) {
-            Text(text = "Registrar")
+            Text(text = "Registrar", fontSize = 22.sp)
         }
+
+        TextButton(onClick = { navController.navigate("login") }) {
+            Text(text = "¿Ya tienes cuenta? Inicia Sesión", fontSize = 18.sp, color = Color.DarkGray)
+        }
+
+        Spacer(modifier = Modifier.weight(1f))
+
     }
 }

@@ -1,6 +1,8 @@
 package com.example.a02appsensorialauditivav2
 
 import PantallaRegistro
+import TextToSpeechScreen
+import android.content.Context
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -32,11 +34,12 @@ class MainActivity : ComponentActivity() {
             val context = LocalContext.current
             val navController = rememberNavController()
 
-            NavHost(navController = navController, startDestination = "login") {
+            NavHost(navController = navController, startDestination = "users") {
                 composable("login") { PantallaLogin(navController) }
                 composable("register") { PantallaRegistro(navController) }
                 composable("recover") { RecuperarContrasenaScreen(navController, context) }
                 composable("users") { PantallaUsuarios(navController) }
+                composable("TextoVoz") { TextToSpeechScreen(context) }
             }
         }
     }
