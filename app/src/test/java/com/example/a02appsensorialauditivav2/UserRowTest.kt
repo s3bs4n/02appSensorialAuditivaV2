@@ -3,7 +3,7 @@ import org.junit.Test
 import org.mockito.Mockito.verify
 
 class UserRowTest {
-
+// TEST PARA VERIFICAR LA ACCION DE ELIMINAR USUARIO Y MODIFICAR CORREO DEL USUARIO
     @Test
     fun `test eliminarUsuario is called`() {
         // Crear un lambda simulada (mock manual) para eliminar un usuario
