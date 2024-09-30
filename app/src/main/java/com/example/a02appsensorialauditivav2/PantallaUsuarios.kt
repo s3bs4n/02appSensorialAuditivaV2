@@ -1,13 +1,11 @@
 package com.example.a02appsensorialauditivav2
 
-import android.content.Context
+import android.widget.Toast
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Text
-import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonDefaults
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -16,8 +14,6 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavHostController
-import android.widget.Toast
-import androidx.compose.foundation.shape.RoundedCornerShape
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 
@@ -25,6 +21,7 @@ import com.google.firebase.firestore.FirebaseFirestore
 fun PantallaUsuarios(navController: NavHostController) {
     val context = LocalContext.current
     val db = FirebaseFirestore.getInstance()
+    val user = FirebaseAuth.getInstance().currentUser
 
     // Variable para almacenar la lista de usuarios
     var userList by remember { mutableStateOf(listOf<Usuarios>()) }
@@ -64,6 +61,59 @@ fun PantallaUsuarios(navController: NavHostController) {
             }
     }
 
+    // Función para modificar el correo del usuario
+    fun modificarCorreoUsuario(id: String, nuevoCorreo: String) {
+        // Buscar el documento por el campo "email" en lugar del ID del documento
+        db.collection("usuarios").whereEqualTo("email", id)
+            .get()
+            .addOnSuccessListener { querySnapshot ->
+                if (!querySnapshot.isEmpty) {
+                    val document = querySnapshot.documents[0]  // Obtener el primer documento encontrado
+                    val documentId = document.id  // ID del documento real en Firestore
+
+                    // Actualizar el campo "email" en el documento encontrado
+                    db.collection("usuarios").document(documentId)
+                        .update("email", nuevoCorreo)
+                        .addOnSuccessListener {
+                            Toast.makeText(context, "Correo actualizado en Firestore", Toast.LENGTH_SHORT).show()
+
+                            // Actualizar en Firebase Authentication
+                            val user = FirebaseAuth.getInstance().currentUser
+                            user?.let {
+                                it.verifyBeforeUpdateEmail(nuevoCorreo)
+                                    .addOnCompleteListener { task ->
+                                        if (task.isSuccessful) {
+                                            Toast.makeText(context, "Correo de verificación enviado. Revisa tu bandeja de entrada.", Toast.LENGTH_SHORT).show()
+                                            // Actualizar la lista local de usuarios
+                                            userList = userList.map { if (it.email == id) it.copy(email = nuevoCorreo) else it }
+                                        } else {
+                                            Toast.makeText(context, "Error al enviar verificación: ${task.exception?.message}", Toast.LENGTH_LONG).show()
+                                        }
+                                    }
+                            } ?: run {
+                                Toast.makeText(context, "Usuario no encontrado o no autenticado", Toast.LENGTH_SHORT).show()
+                            }
+                        }
+                        .addOnFailureListener {
+                            Toast.makeText(context, "Error al actualizar correo en Firestore", Toast.LENGTH_SHORT).show()
+                        }
+                } else {
+                    Toast.makeText(context, "No se encontró un usuario con este correo", Toast.LENGTH_SHORT).show()
+                }
+            }
+            .addOnFailureListener { e ->
+                Toast.makeText(context, "Error al buscar documento: ${e.message}", Toast.LENGTH_LONG).show()
+            }
+    }
+
+
+
+
+
+
+
+
+
     Column(modifier = Modifier.fillMaxSize().padding(24.dp)) {
         Text(text = "Bienvenido a la Pantalla de Usuarios", fontSize = 24.sp)
 
@@ -76,7 +126,7 @@ fun PantallaUsuarios(navController: NavHostController) {
                 .fillMaxWidth()
         ) {
             items(userList) { user ->
-                UserRow(user, ::eliminarUsuario)
+                UserRow(user, ::eliminarUsuario, ::modificarCorreoUsuario)
             }
         }
 
@@ -99,9 +149,12 @@ fun PantallaUsuarios(navController: NavHostController) {
     }
 }
 
+// Aquí agregamos el dialog para modificar el correo
 @Composable
-fun UserRow(user: Usuarios, eliminarUsuario: (String) -> Unit) {
+fun UserRow(user: Usuarios, eliminarUsuario: (String) -> Unit, modificarCorreoUsuario: (String, String) -> Unit) {
     val context = LocalContext.current
+    var showDialog by remember { mutableStateOf(false) }
+    var nuevoCorreo by remember { mutableStateOf("") }
 
     Row(
         modifier = Modifier.fillMaxWidth().padding(vertical = 8.dp)
@@ -112,12 +165,51 @@ fun UserRow(user: Usuarios, eliminarUsuario: (String) -> Unit) {
             modifier = Modifier.weight(1f)
         )
 
+        // Botón para modificar el correo
+        Button(
+            onClick = { showDialog = true },  // Muestra el diálogo
+            modifier = Modifier.padding(horizontal = 4.dp),
+            colors = ButtonDefaults.buttonColors(containerColor = Color.Gray)
+        ) {
+            Text("Modificar")
+        }
+
+        // Botón para eliminar el usuario
         Button(
             onClick = { eliminarUsuario(user.email) },
             modifier = Modifier.padding(horizontal = 4.dp),
             colors = ButtonDefaults.buttonColors(containerColor = Color.Red)
         ) {
             Text("Eliminar")
+        }
+
+        // Dialog para ingresar el nuevo correo
+        if (showDialog) {
+            AlertDialog(
+                onDismissRequest = { showDialog = false },
+                title = { Text(text = "Modificar Correo") },
+                text = {
+                    Column {
+                        Text("Nuevo correo:")
+                        TextField(value = nuevoCorreo, onValueChange = { nuevoCorreo = it })
+                    }
+                },
+                confirmButton = {
+                    Button(
+                        onClick = {
+                            modificarCorreoUsuario(user.email, nuevoCorreo)
+                            showDialog = false
+                        }
+                    ) {
+                        Text("Confirmar")
+                    }
+                },
+                dismissButton = {
+                    Button(onClick = { showDialog = false }) {
+                        Text("Cancelar")
+                    }
+                }
+            )
         }
     }
 }
