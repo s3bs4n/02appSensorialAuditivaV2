@@ -34,7 +34,7 @@ class MainActivity : ComponentActivity() {
             val context = LocalContext.current
             val navController = rememberNavController()
 
-            NavHost(navController = navController, startDestination = "users") {
+            NavHost(navController = navController, startDestination = "login") {
                 composable("login") { PantallaLogin(navController) }
                 composable("register") { PantallaRegistro(navController) }
                 composable("recover") { RecuperarContrasenaScreen(navController, context) }

@@ -71,4 +71,26 @@ dependencies {
     androidTestImplementation(libs.androidx.ui.test.junit4)
     debugImplementation(libs.androidx.ui.tooling)
     debugImplementation(libs.androidx.ui.test.manifest)
+
+    // Dependencias para pruebas unitarias
+    testImplementation(libs.junit)
+    testImplementation("junit:junit:4.13.2")  // Dependencia de JUnit
+    testImplementation("org.mockito:mockito-core:3.9.0")  // Mockito core
+    testImplementation("org.mockito:mockito-inline:3.9.0")  // Mockito inline
+    testImplementation("io.mockk:mockk:1.12.0")
+
+    // Dependencias para pruebas instrumentadas
+    androidTestImplementation(libs.androidx.junit)
+    androidTestImplementation(libs.androidx.espresso.core)
+    androidTestImplementation(platform(libs.androidx.compose.bom))
+    androidTestImplementation(libs.androidx.ui.test.junit4)
+
+    // Otras dependencias de depuración
+    debugImplementation(libs.androidx.ui.tooling)
+    debugImplementation(libs.androidx.ui.test.manifest)
+
+    // Dependencias para pruebas de Compose
+    androidTestImplementation("androidx.compose.ui:ui-test-junit4:1.0.5")
+    debugImplementation("androidx.compose.ui:ui-tooling:1.0.5")
+    debugImplementation("androidx.compose.ui:ui-test-manifest:1.0.5")
 }

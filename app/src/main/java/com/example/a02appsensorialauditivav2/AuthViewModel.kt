@@ -32,6 +32,19 @@ class AuthViewModel : ViewModel() {
             }
     }
 
+    fun validarFormularioRegistro(
+        email: String,
+        password: String,
+        username: String
+    ): Boolean {
+        return when {
+            email.isBlank() || !android.util.Patterns.EMAIL_ADDRESS.matcher(email).matches() -> false
+            password.length < 6 -> false
+            username.isBlank() -> false
+            else -> true
+        }
+    }
+
 }
 
 data class AuthState(
